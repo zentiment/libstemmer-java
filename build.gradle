@@ -1,10 +1,70 @@
 apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
 
 sourceCompatibility = 1.5
-version = '1.0'
+group = 'org.tartarus.snowball'
+archivesBaseName = "snowball"
+version = "1.0.0"
+
+repositories {
+    mavenCentral()
+}
+
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Quickstart',
+        attributes 'Implementation-Title': 'libstemmer',
                    'Implementation-Version': version
     }
 }
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+//signing {
+//    sign configurations.archives
+//}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'libstemmer-java'
+        packaging 'jar'
+        url 'https://github.com/zentiment/libstemmer-java'
+
+        scm {
+          connection 'scm:git:https://github.com/zentiment/libstemmer-java'
+          url 'https://github.com/zentiment/libstemmer-java'
+        }
+
+        licenses {
+          license {
+            name 'BSD LICENSE-2'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+      }
+    }
+  }
+}
+
